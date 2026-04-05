@@ -32,8 +32,8 @@ func main() {
 	}
 
 	cmd := command{
-		name: args[1],
-		args: args[2:],
+		Name: args[1],
+		Args: args[2:],
 	}
 
 	if err := cmds.run(st, cmd); err != nil {
