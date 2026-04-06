@@ -1,4 +1,4 @@
-module github.com/DenisNosik/gator
+module github.com/DenisNosik/gator-rss-aggregator
 
 go 1.25.0
 

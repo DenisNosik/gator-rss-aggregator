@@ -8,8 +8,8 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/DenisNosik/gator/internal/config"
-	"github.com/DenisNosik/gator/internal/database"
+	"github.com/DenisNosik/gator-rss-aggregator/internal/config"
+	"github.com/DenisNosik/gator-rss-aggregator/internal/database"
 )
 
 type state struct {
