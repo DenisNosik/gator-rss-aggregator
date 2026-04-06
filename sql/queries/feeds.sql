@@ -19,3 +19,7 @@ RETURNING *;
 
 -- name: GetFeeds :many
 SELECT * from feeds;
+
+-- name: GetFeedByURL :one
+SELECT * from feeds
+WHERE url = $1 LIMIT 1;
