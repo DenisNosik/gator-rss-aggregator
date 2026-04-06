@@ -22,6 +22,10 @@ func handlerAgg(s *state, cmd command) error {
 		return err
 	}
 
+	if timeBetweenReqs < 30*time.Second {
+		return errors.New("Too fast. Use duration > 30 sec.")
+	}
+
 	fmt.Printf("Collecting feeds every %v\n", timeBetweenReqs)
 	fmt.Println()
 
