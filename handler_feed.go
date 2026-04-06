@@ -10,14 +10,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 2 {
 		return errors.New("Add Feed command expects a feed name and url")
-	}
-
-	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return err
 	}
 
 	feed, err := s.db.CreateFeed(context.Background(), database.CreateFeedParams{
@@ -26,17 +21,26 @@ func handlerAddFeed(s *state, cmd command) error {
 		UpdatedAt: time.Now(),
 		Name:      cmd.Args[0],
 		Url:       cmd.Args[1],
-		UserID:    currentUser.ID,
+		UserID:    user.ID,
 	})
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Feed %s created successfully\n", feed.Name)
-
-	if err := handlerFollow(s, command{Name: "follow", Args: []string{cmd.Args[1]}}); err != nil {
+	feedFollow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	})
+	if err != nil {
 		return err
 	}
+
+	fmt.Printf("%s created successfully\n", feed.Name)
+	fmt.Println()
+	fmt.Printf("%s successfully followed to the %s\n", feedFollow.UserName, feedFollow.FeedName)
 
 	return nil
 }
@@ -68,17 +72,12 @@ func handlerFeeds(s *state, cmd command) error {
 	return nil
 }
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 1 {
 		return errors.New("Follow command expects a url")
 	}
 
 	url := cmd.Args[0]
-
-	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return err
-	}
 
 	feed, err := s.db.GetFeedByURL(context.Background(), url)
 	if err != nil {
@@ -89,22 +88,20 @@ func handlerFollow(s *state, cmd command) error {
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
-		UserID:    currentUser.ID,
+		UserID:    user.ID,
 		FeedID:    feed.ID,
 	})
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Successfully followed to the feed")
-	fmt.Printf("Feed: %s\n", feedFollow.FeedName)
-	fmt.Printf("Current User: %s\n", feedFollow.UserName)
+	fmt.Printf("%s successfully followed to the %s\n", feedFollow.UserName, feedFollow.FeedName)
 
 	return nil
 }
 
-func handlerFollowing(s *state, cmd command) error {
-	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), s.cfg.CurrentUserName)
+func handlerFollowing(s *state, cmd command, user database.User) error {
+	feedFollows, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return err
 	}
